@@ -39,6 +39,9 @@ public class User {
     @Column
     private String avatar;
 
+    @Column
+    private String resetPasswordToken;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Token> tokens = new ArrayList<>();

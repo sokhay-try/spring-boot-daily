@@ -77,6 +77,7 @@ public class JwtTokenProvider {
             System.out.println("Invalid JWT token");
         } catch (ExpiredJwtException ex) {
             System.out.println("Expired JWT token");
+            this.tokenService.deleteById(Long.valueOf(checkToken.getId()));
         } catch (UnsupportedJwtException ex) {
             System.out.println("Unsupported JWT token");
         } catch (IllegalArgumentException ex) {

@@ -8,13 +8,13 @@ import lombok.Data;
 @Data
 public class LoginDto {
 
-    @NotNull(message = "username is required")
-    @NotBlank(message = "username must not be blank")
-    @NotEmpty(message = "username must not be empty")
+    @NotNull(message = "Username is required")
+    @NotBlank(message = "Username must not be blank")
+    @NotEmpty(message = "Username must not be empty")
     private String username;
 
-    @NotNull(message = "password is required")
-    @NotBlank(message = "password must not be blank")
-    @NotEmpty(message = "password must not be empty")
+    @NotNull(message = "Password is required")
+    @NotBlank(message = "Password must not be blank")
+    @NotEmpty(message = "Password must not be empty")
     private String password;
 }

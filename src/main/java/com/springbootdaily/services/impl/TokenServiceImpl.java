@@ -24,4 +24,9 @@ public class TokenServiceImpl implements TokenService {
     public Optional<Token> findByToken(String token) {
         return this.tokenRepository.findByToken(token);
     }
+
+    @Override
+    public void deleteById(Long id) {
+        this.tokenRepository.deleteById(id);
+    }
 }

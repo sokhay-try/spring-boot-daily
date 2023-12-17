@@ -16,4 +16,5 @@ public interface TokenService {
     List<Token> findAllValidTokenByUser(Integer id);
 
     Optional<Token> findByToken(String token);
+    void deleteById(Long id);
 }

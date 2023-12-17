@@ -19,6 +19,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    private static final String[] WHITE_LIST_URL = {"/api/v1/auth/**"};
+
+
     private UserDetailsService userDetailsService;
 
     private JwtAuthenticationEntryPoint authenticationEntryPoint;
@@ -49,7 +52,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((authorize) ->
                         authorize
-                                .requestMatchers("/api/v1/auth/**").permitAll()
+                                .requestMatchers(WHITE_LIST_URL).permitAll()
                                 .anyRequest().authenticated()
 
                 )
