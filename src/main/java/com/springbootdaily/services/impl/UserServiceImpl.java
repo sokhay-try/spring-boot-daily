@@ -6,12 +6,20 @@ import com.springbootdaily.exceptions.APIException;
 import com.springbootdaily.payloads.ChangePasswordDto;
 import com.springbootdaily.repositories.TokenRepository;
 import com.springbootdaily.repositories.UserRepository;
+import com.springbootdaily.response.ListResponse;
+import com.springbootdaily.response.Pagination;
+import com.springbootdaily.response.SuccessResponse;
 import com.springbootdaily.services.UserService;
+import com.springbootdaily.utils.SortingUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -19,11 +27,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
-
     private final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     @Autowired
     private UserRepository userRepository;
@@ -33,6 +41,46 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Override
+    public SuccessResponse getAllUsers(int pageNo, int pageSize, String sortBy) {
+        // Create a Pageable instance
+        Pageable pageable;
+
+        if (sortBy != null) {
+            pageable = PageRequest.of(pageNo, pageSize, SortingUtils.buildSort(sortBy));
+        }
+        else {
+            pageable = PageRequest.of(pageNo, pageSize);
+        }
+
+        Page<User> users = this.userRepository.findAll(pageable);
+
+        // get contents
+        List<User> contents = users.getContent();
+
+        // set up pagination
+        Pagination pagination = new Pagination();
+
+        pagination.setCurrentPage(users.getNumber());
+        pagination.setPageSize(users.getSize());
+        pagination.setTotalElements(users.getTotalElements());
+        pagination.setTotalPages(users.getTotalPages());
+        pagination.setLast(users.isLast());
+
+
+        // set up list response
+        ListResponse listResponse = new ListResponse();
+
+        listResponse.setContent(contents);
+        listResponse.setPagination(pagination);
+
+
+        SuccessResponse successResponse = new SuccessResponse();
+        successResponse.setData(listResponse);
+
+        return successResponse;
+    }
 
     @Override
     public Optional<User> getCurrentUser() {
@@ -141,6 +189,24 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(newPassword));
         user.setResetPasswordToken(null);
         this.userRepository.save(user);
+    }
+
+    private Sort buildSort(String sort) {
+        String[] sortValues = sort.split(",");
+        if (sortValues != null && sortValues.length > 0) {
+            Sort.Order[] orders = new Sort.Order[sortValues.length / 2];
+
+            for (int i = 0, j = 0; i < sortValues.length; i += 2, j++) {
+                String field = sortValues[i];
+                String direction = sortValues[i + 1];
+                orders[j] = new Sort.Order(Sort.Direction.fromString(direction), field);
+            }
+
+            return Sort.by(orders);
+        } else {
+            return Sort.unsorted();
+        }
+
     }
 
 }

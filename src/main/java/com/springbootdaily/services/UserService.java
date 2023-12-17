@@ -2,6 +2,7 @@ package com.springbootdaily.services;
 
 import com.springbootdaily.entities.User;
 import com.springbootdaily.payloads.ChangePasswordDto;
+import com.springbootdaily.response.SuccessResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
@@ -9,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import java.util.Optional;
 
 public interface UserService {
+    SuccessResponse getAllUsers(int pageNo, int pageSize, String sortBy);
     Optional<User> getCurrentUser();
 
     Optional<User> getByEmail(String email);

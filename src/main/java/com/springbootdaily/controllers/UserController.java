@@ -24,6 +24,19 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @GetMapping
+    public ResponseEntity<?> getAllUsers(
+            @RequestParam(value = "page", defaultValue = AppConstant.DEFAULT_PAGE_NUMBER, required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = AppConstant.DEFAULT_PAGE_SIZE, required = false) int pageSize,
+            @RequestParam(value = "sort", required = false) String sort
+    ) {
+
+        SuccessResponse users = this.userService.getAllUsers(pageNo, pageSize, sort);
+
+        return ResponseEntity.ok(users);
+
+    }
+
     @GetMapping(value = {"/profile"})
     public ResponseEntity<?> getCurrentUser() {
         Optional<User> user = this.userService.getCurrentUser();
