@@ -4,12 +4,14 @@ import com.springbootdaily.entities.Token;
 import com.springbootdaily.entities.User;
 import com.springbootdaily.exceptions.APIException;
 import com.springbootdaily.payloads.ChangePasswordDto;
+import com.springbootdaily.payloads.UpdateUserDto;
 import com.springbootdaily.repositories.TokenRepository;
 import com.springbootdaily.repositories.UserRepository;
 import com.springbootdaily.response.ListResponse;
 import com.springbootdaily.response.Pagination;
 import com.springbootdaily.response.SuccessResponse;
 import com.springbootdaily.services.UserService;
+import com.springbootdaily.utils.PaginationUtil;
 import com.springbootdaily.utils.SortingUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,8 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -59,22 +61,15 @@ public class UserServiceImpl implements UserService {
         // get contents
         List<User> contents = users.getContent();
 
+
         // set up pagination
-        Pagination pagination = new Pagination();
-
-        pagination.setCurrentPage(users.getNumber());
-        pagination.setPageSize(users.getSize());
-        pagination.setTotalElements(users.getTotalElements());
-        pagination.setTotalPages(users.getTotalPages());
-        pagination.setLast(users.isLast());
-
+        Pagination pagination = PaginationUtil.build(users);
 
         // set up list response
         ListResponse listResponse = new ListResponse();
 
         listResponse.setContent(contents);
         listResponse.setPagination(pagination);
-
 
         SuccessResponse successResponse = new SuccessResponse();
         successResponse.setData(listResponse);
@@ -95,8 +90,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Optional<User> getUserById(Long id) {
+        return this.userRepository.findById(id);
+    }
+
+    @Override
     public Optional<User> getByEmail(String email) {
         return this.userRepository.findByEmail(email);
+    }
+
+    @Override
+    public Optional<User> getByUsername(String username) {
+        return this.userRepository.findByUsername(username);
     }
 
     @Override
@@ -191,22 +196,79 @@ public class UserServiceImpl implements UserService {
         this.userRepository.save(user);
     }
 
-    private Sort buildSort(String sort) {
-        String[] sortValues = sort.split(",");
-        if (sortValues != null && sortValues.length > 0) {
-            Sort.Order[] orders = new Sort.Order[sortValues.length / 2];
+    @Override
+    public User updateUser(Long id, UpdateUserDto updateUserDto) {
+        // Find the existing user by ID
+        User existingUser = this.userRepository.findById(id).get();
+        if(existingUser != null) {
+            // Validate that the new email and username are not the same as another user's email and username
+            Boolean isEmailAlreadyExist = isEmailAlreadyExist(updateUserDto, existingUser);
+            Boolean isUsernameAlreadyExist = isUsernameAlreadyExist(updateUserDto, existingUser);
 
-            for (int i = 0, j = 0; i < sortValues.length; i += 2, j++) {
-                String field = sortValues[i];
-                String direction = sortValues[i + 1];
-                orders[j] = new Sort.Order(Sort.Direction.fromString(direction), field);
+            if(isUsernameAlreadyExist) {
+                throw new APIException(HttpStatus.BAD_REQUEST, "Username is already exist");
             }
 
-            return Sort.by(orders);
-        } else {
-            return Sort.unsorted();
+            if(isEmailAlreadyExist) {
+                throw new APIException(HttpStatus.BAD_REQUEST, "Email is already exist");
+            }
+
+            existingUser.setUsername(updateUserDto.getUsername());
+            existingUser.setFirstName(updateUserDto.getFirstName());
+            existingUser.setLastName(updateUserDto.getLastName());
+            existingUser.setEmail(updateUserDto.getEmail());
+            existingUser.setPhoneNumber(updateUserDto.getPhoneNumber());
+
+            this.userRepository.save(existingUser);
+
+            return existingUser;
+
+        }
+        else {
+            throw new APIException(HttpStatus.NOT_FOUND, "Could not find any users with the ID " + id);
         }
 
+    }
+
+    @Override
+    public void deleteUser(Long id) {
+        // Find the existing user by ID
+        User user = userRepository.findById(id).orElse(null);
+        if (user != null) {
+            // delete relationship in table users_roles first
+            try {
+                userRepository.deleteAllRolesByUserId(user.getId());
+            }
+            catch (JpaSystemException ex) {
+                userRepository.delete(user);
+            }
+
+        }
+    }
+
+
+    public boolean isEmailAlreadyExist(UpdateUserDto updatedUser, User existingUser) {
+
+        if (!updatedUser.getEmail().equals(existingUser.getEmail())) {
+            // Check if the new email is not the same as another user's email
+            Optional<User> user = this.userRepository.findByEmail(updatedUser.getEmail());
+            if (user.isPresent()) {
+                return true;
+            }
+        }
+        return false;
+
+    }
+    public boolean isUsernameAlreadyExist(UpdateUserDto updatedUser, User existingUser) {
+
+        if(!updatedUser.getUsername().equals(existingUser.getUsername())) {
+            Optional<User> user = this.userRepository.findByUsername(updatedUser.getUsername());
+
+            if (user.isPresent()) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

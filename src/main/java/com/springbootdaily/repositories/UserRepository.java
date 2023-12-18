@@ -2,6 +2,7 @@ package com.springbootdaily.repositories;
 
 import com.springbootdaily.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
@@ -18,5 +19,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Boolean existsByEmail(String email);
 
     Optional<User> findByResetPasswordToken(String token);
+
+    @Query(value = "DELETE FROM users_roles us WHERE us.user_id = :userId", nativeQuery = true)
+    void deleteAllRolesByUserId(Long userId);
 }
 

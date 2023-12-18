@@ -3,6 +3,7 @@ package com.springbootdaily.controllers;
 import com.springbootdaily.entities.User;
 import com.springbootdaily.exceptions.APIException;
 import com.springbootdaily.payloads.ChangePasswordDto;
+import com.springbootdaily.payloads.UpdateUserDto;
 import com.springbootdaily.response.ErrorResponse;
 import com.springbootdaily.response.SuccessResponse;
 import com.springbootdaily.services.UserService;
@@ -55,6 +56,23 @@ public class UserController {
 
     }
 
+    @GetMapping(value = {"/{id}"})
+    public ResponseEntity<?> getUserById(@PathVariable("id") Long id) {
+        Optional<User> user = this.userService.getUserById(id);
+
+        if(user.isPresent()) {
+            SuccessResponse successResponse = new SuccessResponse();
+            successResponse.setData(user);
+
+            return ResponseEntity.ok(successResponse);
+        }
+
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setMessage("User not found");
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
     @PostMapping(value = {"/logout"})
     public ResponseEntity<?> logout(
             HttpServletRequest request,
@@ -81,6 +99,28 @@ public class UserController {
         successResponse.setData("Password changed successfully");
 
         return ResponseEntity.ok(successResponse);
+    }
+
+    @PutMapping(value = {"/{id}"})
+    public ResponseEntity<SuccessResponse> updateUser(@PathVariable("id") Long id, @RequestBody @Valid UpdateUserDto updateUserDto) {
+
+        var updatedUser = this.userService.updateUser(id, updateUserDto);
+
+        SuccessResponse successResponse = new SuccessResponse();
+        successResponse.setData(updatedUser);
+
+        return ResponseEntity.ok(successResponse);
+    }
+
+    @DeleteMapping(value = {"/{id}"})
+    public ResponseEntity<SuccessResponse> deleteUser(@PathVariable("id") Long id) {
+
+        this.userService.deleteUser(id);
+
+        SuccessResponse successResponse = new SuccessResponse();
+        successResponse.setData("User deleted successfully");
+        return ResponseEntity.ok(successResponse);
+
     }
 
 }
