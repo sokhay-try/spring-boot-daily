@@ -1,5 +1,6 @@
 package com.springbootdaily.services.impl;
 
+import com.springbootdaily.Specifications.UserSpecification;
 import com.springbootdaily.entities.Token;
 import com.springbootdaily.entities.User;
 import com.springbootdaily.exceptions.APIException;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.core.Authentication;
@@ -30,6 +32,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -45,7 +48,7 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public SuccessResponse getAllUsers(int pageNo, int pageSize, String sortBy) {
+    public SuccessResponse getAllUsers(int pageNo, int pageSize, String sortBy, Map<String, String> filterParams) {
         // Create a Pageable instance
         Pageable pageable;
 
@@ -56,7 +59,15 @@ public class UserServiceImpl implements UserService {
             pageable = PageRequest.of(pageNo, pageSize);
         }
 
-        Page<User> users = this.userRepository.findAll(pageable);
+        Page<User> users;
+
+        if(!filterParams.isEmpty()) {
+            Specification<User> spec = UserSpecification.buildSpecification(filterParams);
+            users = this.userRepository.findAll(spec, pageable);
+        }
+        else {
+            users = this.userRepository.findAll(pageable);
+        }
 
         // get contents
         List<User> contents = users.getContent();
@@ -245,7 +256,6 @@ public class UserServiceImpl implements UserService {
 
         }
     }
-
 
     public boolean isEmailAlreadyExist(UpdateUserDto updatedUser, User existingUser) {
 

@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -29,10 +30,11 @@ public class UserController {
     public ResponseEntity<?> getAllUsers(
             @RequestParam(value = "page", defaultValue = AppConstant.DEFAULT_PAGE_NUMBER, required = false) int pageNo,
             @RequestParam(value = "pageSize", defaultValue = AppConstant.DEFAULT_PAGE_SIZE, required = false) int pageSize,
-            @RequestParam(value = "sort", required = false) String sort
+            @RequestParam(value = "sort", required = false) String sort,
+            @RequestParam Map<String, String> filterParams
     ) {
 
-        SuccessResponse users = this.userService.getAllUsers(pageNo, pageSize, sort);
+        SuccessResponse users = this.userService.getAllUsers(pageNo, pageSize, sort, filterParams);
 
         return ResponseEntity.ok(users);
 
@@ -121,6 +123,16 @@ public class UserController {
         successResponse.setData("User deleted successfully");
         return ResponseEntity.ok(successResponse);
 
+    }
+
+    @GetMapping("/public-resource")
+    public String getPublicResource() {
+        return "Public Resource";
+    }
+
+    @GetMapping("/admin-resource")
+    public String getAdminResource() {
+        return "Admin Resource";
     }
 
 }

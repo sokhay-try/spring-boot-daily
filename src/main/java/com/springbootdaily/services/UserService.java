@@ -8,10 +8,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
 
+import java.util.Map;
 import java.util.Optional;
 
 public interface UserService {
-    SuccessResponse getAllUsers(int pageNo, int pageSize, String sortBy);
+    SuccessResponse getAllUsers(int pageNo, int pageSize, String sortBy, Map<String, String> filterParams);
     Optional<User> getCurrentUser();
     Optional<User> getUserById(Long id);
     Optional<User> getByEmail(String email);
@@ -25,4 +26,5 @@ public interface UserService {
     void updatePassword(User user, String newPassword);
     User updateUser(Long id, UpdateUserDto updateUserDto);
     void deleteUser(Long id);
+
 }
