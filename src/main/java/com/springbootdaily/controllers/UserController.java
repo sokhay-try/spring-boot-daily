@@ -125,14 +125,4 @@ public class UserController {
 
     }
 
-    @GetMapping("/public-resource")
-    public String getPublicResource() {
-        return "Public Resource";
-    }
-
-    @GetMapping("/admin-resource")
-    public String getAdminResource() {
-        return "Admin Resource";
-    }
-
 }

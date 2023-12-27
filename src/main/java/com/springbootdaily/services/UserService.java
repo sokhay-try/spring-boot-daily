@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -26,5 +27,6 @@ public interface UserService {
     void updatePassword(User user, String newPassword);
     User updateUser(Long id, UpdateUserDto updateUserDto);
     void deleteUser(Long id);
+    List<Object[]> findRolesByUserId(Long userId);
 
 }

@@ -45,4 +45,9 @@ public class RegisterDto {
     // This regular expression ensures that the password contains at least one uppercase letter, one lowercase letter, one number, and one symbol.
     private String password;
 
+    @NotNull(message = "Role is required")
+    @NotBlank(message = "Role must not be blank")
+    @NotEmpty(message = "Role must not be empty")
+    private String role;
+
 }

@@ -53,6 +53,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authorize) ->
                         authorize
                                 .requestMatchers(WHITE_LIST_URL).permitAll()
+                                .requestMatchers("/api/v1/demo/user").hasRole("USER")
+                                .requestMatchers("/api/v1/demo/admin").hasRole("ADMIN")
                                 .anyRequest().authenticated()
 
                 )

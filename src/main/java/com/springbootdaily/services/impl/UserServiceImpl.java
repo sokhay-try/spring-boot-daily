@@ -257,6 +257,12 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public List<Object[]> findRolesByUserId(Long userId) {
+        var roles = this.userRepository.findRolesByUserId(userId);
+        return roles;
+    }
+
     public boolean isEmailAlreadyExist(UpdateUserDto updatedUser, User existingUser) {
 
         if (!updatedUser.getEmail().equals(existingUser.getEmail())) {
